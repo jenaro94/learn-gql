@@ -34,6 +34,6 @@ module.exports = {
     ),
   },
   Task: {
-    user: parent => User.findById(parent.user),
+    user: async parent => await User.findById(parent.user),
   },
 }
