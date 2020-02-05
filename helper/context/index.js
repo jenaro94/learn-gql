@@ -1,16 +1,23 @@
 const jwt = require('jsonwebtoken')
 
-module.exports.verifyUser = async (req) => {
+const User = require('../../database/models/user')
+
+module.exports.verifyUser = async req => {
   try {
     req.email = null
-    console.log(req.headers)
+    req.loggedInUserId = null
     const bearerHeader = req.headers && req.headers.authorization
     if (bearerHeader) {
       const token = bearerHeader.split(' ')[1]
-      const payload = jwt.verify(token, process.env.JWT_SECRET_KEY || 'mysecretkey')
+      const payload = jwt.verify(
+        token,
+        process.env.JWT_SECRET_KEY || 'mysecretkey'
+      )
       req.email = payload.email
+      const user = await User.findOne({ email: payload.email })
+      req.loggedInUserId = user.id
     }
-  } catch(err) {
+  } catch (err) {
     console.log(err)
     throw err
   }

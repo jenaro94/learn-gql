@@ -1,22 +1,39 @@
-const { tasks, users } = require('../constants')
-const uuid = require('uuid')
+const { combineResolvers } = require('graphql-resolvers')
+
+const Task = require('../database/models/task')
+const User = require('../database/models/user')
+const { isAuthenticated, isTaskOwner } = require('./middleware')
 
 module.exports = {
   Query: {
-    tasks: () => tasks,
-    task: (_, { id }) => tasks.find(task => task.id === id),
+    tasks: combineResolvers(
+      isAuthenticated,
+      async (_, __, { loggedInUserId }) =>
+        await Task.find({ user: loggedInUserId })
+    ),
+    task: combineResolvers(
+      isAuthenticated,
+      isTaskOwner,
+      async (_, { id }) => await Task.findById(id)
+    ),
   },
   Mutation: {
-    createTask: (_, { input }) => {
-      const task = {
-        ...input,
-        id: uuid.v4(),
+    createTask: combineResolvers(
+      isAuthenticated,
+      async (_, { input }, { email }) => {
+        const user = await User.findOne({ email })
+        const task = new Task({
+          ...input,
+          user: user.id,
+        })
+        const result = await task.save()
+        user.tasks.push(result.id)
+        await user.save()
+        return result
       }
-      tasks.push(task)
-      return task
-    },
+    ),
   },
   Task: {
-    user: parent => users.find(user => user.id === parent.userId),
+    user: parent => User.findById(parent.user),
   },
 }
