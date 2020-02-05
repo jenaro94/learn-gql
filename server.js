@@ -37,6 +37,9 @@ const apolloServer = new ApolloServer({
 
     return contextObj
   },
+  formatError: error => {
+    return { message: error.message, code: error.extensions.code }
+  },
 })
 
 apolloServer.applyMiddleware({ app, path: '/graphql' })
