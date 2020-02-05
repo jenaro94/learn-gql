@@ -73,6 +73,7 @@ module.exports = {
     },
   },
   User: {
-    tasks: async ({ id }) => await Task.find({ user: id }),
+    // tasks: async ({ id }) => await Task.find({ user: id }),
+    tasks: async ({ tasks }, _, { loaders }) => await loaders.task.load(tasks),
   },
 }

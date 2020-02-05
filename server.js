@@ -32,6 +32,7 @@ const apolloServer = new ApolloServer({
     }
     contextObj.loaders = {
       user: new Dataloader(keys => loaders.user.batchUsers(keys)),
+      task: new Dataloader(keys => loaders.task.batchTasks(keys)),
     }
 
     return contextObj
